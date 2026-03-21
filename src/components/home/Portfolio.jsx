@@ -1,0 +1,155 @@
+import React, { useEffect, useRef, useState } from "react";
+
+const portfolioItems = [
+    {
+        icon: "fa-warehouse",
+        title: "Warehousing & Storage",
+        desc: "Advanced storage facilities ensuring product quality and efficient inventory management across multiple locations.",
+        stats: [
+            { label: "Facilities", value: "50+" },
+            { label: "Capacity", value: "2M+ tons" }
+        ]
+    },
+    {
+        icon: "fa-ship",
+        title: "Import & Global Sourcing",
+        desc: "Direct procurement from international suppliers across Asia and global agricultural markets.",
+        stats: [
+            { label: "Countries", value: "20+" },
+            { label: "Partners", value: "150+" }
+        ]
+    },
+    {
+        icon: "fa-route",
+        title: "Distribution Network",
+        desc: "Island-wide delivery network supplying wholesalers, retailers, and institutional buyers.",
+        stats: [
+            { label: "Routes", value: "200+" },
+            { label: "Coverage", value: "Island-wide" }
+        ]
+    }
+];
+
+/* =========================
+   ANIMATION (Lightweight)
+========================= */
+const useInView = (threshold = 0.1) => {
+    const ref = useRef(null);
+    const [inView, setInView] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setInView(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold }
+        );
+
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, [threshold]);
+
+    return [ref, inView];
+};
+
+const FadeIn = ({ children, delay = 0 }) => {
+    const [ref, inView] = useInView();
+
+    return (
+        <div
+            ref={ref}
+            style={{
+                opacity: inView ? 1 : 0,
+                transform: inView ? "translateY(0)" : "translateY(20px)",
+                transition: `all 0.6s ease ${delay}ms`
+            }}
+        >
+            {children}
+        </div>
+    );
+};
+
+/* =========================
+   MAIN COMPONENT
+========================= */
+const Portfolio = () => {
+    return (
+        <section className="bg-[#f0f4f9] px-4 py-16 sm:px-6">
+            <div className="mx-auto max-w-7xl">
+
+                {/* Header */}
+                <FadeIn>
+                    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-1 rounded-full bg-orange-500" />
+                            <h2 className="text-xl font-extrabold text-[#0b1f3a] sm:text-2xl">
+                                Our Portfolio{" "}
+                                <span className="text-sm font-normal text-gray-400">
+                                    Operations & Infrastructure
+                                </span>
+                            </h2>
+                        </div>
+
+                        <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-2 text-xs text-gray-400 shadow-sm">
+                            <span className="inline-block h-2 w-2 rounded-full bg-orange-400" />
+                            Sri Lanka · Global Markets
+                        </div>
+                    </div>
+                </FadeIn>
+
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {portfolioItems.map((item, index) => (
+                        <FadeIn key={index} delay={index * 100}>
+                            <div className="group relative h-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                                {/* Card Body */}
+                                <div className="p-6">
+
+                                    {/* Icon + Title */}
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <i className={`fa-solid ${item.icon} text-sm text-[#0b1f3a] group-hover:text-orange-500 transition`} />
+                                        <h3 className="text-sm font-bold text-[#0b1f3a]">
+                                            {item.title}
+                                        </h3>
+                                    </div>
+
+                                    {/* Description */}
+                                    <p className="text-gray-500 text-sm leading-relaxed">
+                                        {item.desc}
+                                    </p>
+                                </div>
+
+                                {/* Stats Footer */}
+                                <div className="border-t border-gray-100 bg-gray-50 px-6 py-4 flex items-center justify-between gap-4">
+                                    {item.stats.map((stat, i) => (
+                                        <div key={i} className="flex-1">
+                                            <div className="text-base font-extrabold text-orange-500">
+                                                {stat.value}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-0.5">
+                                                {stat.label}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <i className="fa-solid fa-arrow-right text-[10px] text-orange-500 opacity-0 group-hover:opacity-100 transition" />
+                                </div>
+
+                                {/* Bottom Accent Line */}
+                                <div className="h-[2px] w-0 bg-orange-500 group-hover:w-full transition-all duration-500" />
+
+                            </div>
+                        </FadeIn>
+                    ))}
+                </div>
+
+            </div>
+        </section>
+    );
+};
+
+export default React.memo(Portfolio);

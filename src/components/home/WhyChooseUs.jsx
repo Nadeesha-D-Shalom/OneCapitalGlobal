@@ -1,82 +1,124 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const features = [
   {
     icon: "fa-link",
     title: "Direct Sourcing",
     desc: "We eliminate intermediaries by sourcing directly from global producers, ensuring competitive pricing and consistent supply.",
-    color: "orange"
   },
   {
     icon: "fa-shield-halved",
     title: "Global Compliance",
     desc: "We follow strict regulatory standards, ensuring quality, safety, and full compliance with international trade requirements.",
-    color: "blue"
   },
   {
     icon: "fa-chart-pie",
     title: "Risk Management",
     desc: "Advanced procurement strategies and market analysis help us minimize volatility and maintain stable pricing.",
-    color: "green"
   }
 ];
 
+/* =========================
+   ANIMATION (Lightweight)
+========================= */
+const useInView = (threshold = 0.1) => {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return [ref, inView];
+};
+
+const FadeIn = ({ children, delay = 0 }) => {
+  const [ref, inView] = useInView();
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: `all 0.6s ease ${delay}ms`
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* =========================
+   MAIN COMPONENT
+========================= */
 const WhyChooseUs = () => {
   return (
-    <section className="bg-white px-6 py-20">
-      <div className="max-w-7xl mx-auto">
+    <section className="bg-[#f0f4f9] px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-7xl">
 
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-block px-4 py-1 bg-orange-50 text-orange-500 text-xs font-semibold rounded-full">
-            Why Choose Us
-          </div>
-
-          <h2 className="text-3xl font-bold text-[#0b1f3a] mt-4">
-            Built for Reliability & Performance
-          </h2>
-
-          <p className="text-gray-500 mt-4 max-w-2xl mx-auto">
-            We combine global sourcing power, operational efficiency, and data-driven insights
-            to deliver consistent value across the supply chain.
-          </p>
-        </div>
-
-        {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-8">
-
-          {features.map((item, index) => (
-            <div
-              key={index}
-              className="group relative p-8 rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
-            >
-
-              {/* Glow Effect */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-r from-orange-500/10 to-transparent pointer-events-none" />
-
-              {/* Icon */}
-              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-6
-                bg-gray-100 group-hover:bg-orange-100 transition">
-
-                <i className={`fa-solid ${item.icon} text-xl text-[#0b1f3a] group-hover:text-orange-500 transition`} />
-              </div>
-
-              {/* Title */}
-              <h3 className="text-lg font-bold text-[#0b1f3a] mb-3">
-                {item.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-gray-500 text-sm leading-relaxed">
-                {item.desc}
-              </p>
-
-              {/* Bottom Accent Line */}
-              <div className="mt-6 h-[2px] w-0 bg-orange-500 group-hover:w-full transition-all duration-300" />
-
+        <FadeIn>
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-1 rounded-full bg-orange-500" />
+              <h2 className="text-xl font-extrabold text-[#0b1f3a] sm:text-2xl">
+                Why Choose Us{" "}
+                <span className="text-sm font-normal text-gray-400">
+                  Built for Reliability & Performance
+                </span>
+              </h2>
             </div>
-          ))}
 
+            <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-2 text-xs text-gray-400 shadow-sm">
+              <span className="inline-block h-2 w-2 rounded-full bg-orange-400" />
+              Trusted · Global Network
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {features.map((item, index) => (
+            <FadeIn key={index} delay={index * 100}>
+              <div className="group relative h-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                {/* Card Body */}
+                <div className="p-6">
+
+                  {/* Icon + Title */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <i className={`fa-solid ${item.icon} text-sm text-[#0b1f3a] group-hover:text-orange-500 transition`} />
+                    <h3 className="text-sm font-bold text-[#0b1f3a]">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+
+                
+
+                {/* Bottom Accent Line */}
+                <div className="h-[2px] w-0 bg-orange-500 group-hover:w-full transition-all duration-500" />
+
+              </div>
+            </FadeIn>
+          ))}
         </div>
 
       </div>
