@@ -45,30 +45,34 @@ const FadeIn = ({ children, delay = 0 }) => {
 ========================= */
 const Field = ({ icon, name, placeholder, value, onChange, type = "text", multiline = false }) => (
   <div className="relative">
-    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 text-xs pointer-events-none">
-      {multiline
-        ? <span style={{ top: "1.1rem", position: "absolute", left: 0 }}><i className={`fa-solid ${icon}`} /></span>
-        : <i className={`fa-solid ${icon}`} />
-      }
-    </span>
     {multiline ? (
-      <textarea
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        rows={3}
-        className="w-full border border-gray-100 bg-[#f9fafb] rounded-xl pl-10 pr-4 pt-3 pb-3 text-sm text-[#0b1f3a] placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition resize-none"
-      />
+      <>
+        <span className="absolute text-gray-400 text-xs pointer-events-none" style={{ left: "1rem", top: "0.85rem" }}>
+          <i className={`fa-solid ${icon}`} />
+        </span>
+        <textarea
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          rows={3}
+          className="w-full border border-gray-100 bg-[#f9fafb] rounded-xl pl-10 pr-4 pt-3 pb-3 text-sm text-[#0b1f3a] placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition resize-none"
+        />
+      </>
     ) : (
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className="w-full border border-gray-100 bg-[#f9fafb] rounded-xl pl-10 pr-4 py-3 text-sm text-[#0b1f3a] placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition"
-      />
+      <>
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">
+          <i className={`fa-solid ${icon}`} />
+        </span>
+        <input
+          name={name}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          className="w-full border border-gray-100 bg-[#f9fafb] rounded-xl pl-10 pr-4 py-3 text-sm text-[#0b1f3a] placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition"
+        />
+      </>
     )}
   </div>
 );
@@ -85,9 +89,29 @@ const CTA = () => {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^\+?[0-9]{7,15}$/.test(phone);
 
+  /* Check if user has typed anything in any field */
+  const isDirty = Object.values(form).some((v) => v.trim() !== "");
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
+  };
+
+  /* Backdrop click — warn if dirty, close if clean */
+  const handleBackdropClick = () => {
+    if (isDirty) {
+      setError("Please complete and submit the form, or click the × button to discard and close.");
+    } else {
+      forceClose();
+    }
+  };
+
+  /* Force close — always works, used by × button */
+  const forceClose = () => {
+    setOpen(false);
+    setError("");
+    setSubmitted(false);
+    setForm({ name: "", email: "", phone: "", address: "", message: "" });
   };
 
   const handleSubmit = () => {
@@ -98,15 +122,18 @@ const CTA = () => {
     if (!validateEmail(form.email)) { setError("Invalid email format."); return; }
     if (!validatePhone(form.phone)) { setError("Invalid phone number."); return; }
 
+    setError("");
     setSubmitted(true);
     setTimeout(() => {
-      setOpen(false);
-      setSubmitted(false);
-      setForm({ name: "", email: "", phone: "", address: "", message: "" });
+      forceClose();
     }, 2200);
   };
 
-  const handleOpen = () => { setOpen(true); setError(""); setSubmitted(false); };
+  const handleOpen = () => {
+    setOpen(true);
+    setError("");
+    setSubmitted(false);
+  };
 
   /* Lock body scroll when modal open */
   useEffect(() => {
@@ -179,7 +206,7 @@ const CTA = () => {
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-          onClick={() => setOpen(false)}
+          onClick={handleBackdropClick}
         >
           <div
             className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
@@ -188,16 +215,19 @@ const CTA = () => {
           >
 
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between border-b border-gray-100 bg-[#0b1f3a] px-6 py-4">
+            <div className="flex items-center justify-between bg-[#0b1f3a] px-6 py-4 border-b border-white/10">
               <div className="flex items-center gap-3">
                 <div className="h-6 w-1 rounded-full bg-orange-500" />
                 <h3 className="text-sm font-extrabold text-white">Contact Us</h3>
               </div>
+
+              {/* Close Button — white icon on dark bar, turns red on hover */}
               <button
-                onClick={() => setOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-gray-300 hover:bg-white/20 transition text-xs"
+                onClick={forceClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 hover:bg-red-500 text-white transition-all duration-200"
+                title="Discard & close"
               >
-                <i className="fa-solid fa-xmark" />
+                <i className="fa-solid fa-xmark text-sm" />
               </button>
             </div>
 
@@ -225,10 +255,11 @@ const CTA = () => {
 
                 <Field icon="fa-comment" name="message" placeholder="Your message *" value={form.message} onChange={handleChange} multiline />
 
+                {/* Error message */}
                 {error && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">
-                    <i className="fa-solid fa-circle-exclamation" />
-                    {error}
+                  <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2.5 text-xs text-red-500">
+                    <i className="fa-solid fa-circle-exclamation mt-0.5 shrink-0" />
+                    <span>{error}</span>
                   </div>
                 )}
 
@@ -240,8 +271,8 @@ const CTA = () => {
                   <i className="fa-solid fa-paper-plane text-xs" />
                 </button>
 
-                <p className="text-center text-xs text-gray-300">
-                  Fields marked * are required
+                <p className="text-center text-xs text-gray-400">
+                  Fields marked <span className="text-orange-400 font-bold">*</span> are required
                 </p>
               </div>
             )}
